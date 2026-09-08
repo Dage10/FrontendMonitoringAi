@@ -3,35 +3,17 @@
 import { useEffect, useState } from "react";
 import { connectSSE } from "@/lib/sse";
 import { api } from "@/lib/api";
-import { toChartData, avgLatency, availabilityPercent, RANGE_OPTIONS, filterMetricsByMinutes } from "@/lib/metrics";
+import { toChartData, avgLatency, availabilityPercent, filterMetricsByMinutes } from "@/lib/metrics";
 import LatencyChart from "@/components/LatencyChart";
 import Header from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
 import ErrorsChart from "@/components/ErrorsChart";
 import AvailabilityChart from "@/components/AvailabilityChart";
+import RangeSelector from "@/components/RangeSelector";
 import Link from "next/link";
 
 type Service = { id: number; lastStatusCode?: number | null };
 type RawMetric = { latencyMs: number; statusCode: number; availability: number; createdAt: string };
-
-function RangeSelector({ value, onChange }: { value: number; onChange: (minutes: number) => void }) {
-  return (
-    <div className="flex flex-wrap gap-2">
-      {RANGE_OPTIONS.map((minutes) => (
-        <button
-          key={minutes}
-          type="button"
-          onClick={() => onChange(minutes)}
-          className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${
-            value === minutes ? "bg-[#6366F1] text-white" : "bg-[#1E293B] text-[#CBD5E1] hover:bg-[#334155]"
-          }`}
-        >
-          {minutes >= 60 * 24 * 7 ? "Last 7 days" : minutes >= 60 * 24 ? "Last 24 hours" : "Last 60 min"}
-        </button>
-      ))}
-    </div>
-  );
-}
 
 export default function Dashboard() {
   const [metrics, setMetrics] = useState<ReturnType<typeof toChartData>>([]);

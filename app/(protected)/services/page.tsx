@@ -16,7 +16,7 @@ type ServiceItem = {
   lastStatusCode?: number | null;
 };
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 3;
 
 export default function ServicesPage() {
   const [services, setServices] = useState<ServiceItem[]>([]);
