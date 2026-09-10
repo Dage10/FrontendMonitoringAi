@@ -55,12 +55,11 @@ export default function Dashboard() {
     const close = connectSSE((event, data) => {
       if (event === "metric") {
         const point = data as RawMetric;
-        const now = new Date().toISOString();
         const mapped = {
           latency: point.latencyMs ?? 0,
           errors: (point.statusCode ?? 200) >= 400 ? 1 : 0,
           availability: availabilityPercent(point.availability ?? 0),
-          timestamp: new Date(now).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          timestamp: new Date(point.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         };
         setMetrics((prev) => [...prev.slice(-49), mapped]);
         setLastUpdate(new Date().toLocaleTimeString());
