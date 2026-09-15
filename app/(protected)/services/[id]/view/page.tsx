@@ -13,6 +13,14 @@ import Link from "next/link";
 type RawMetric = { latencyMs: number; statusCode: number; availability: number; createdAt: string };
 type Service = { name: string; url: string; lastLatencyMs?: number | null; lastStatusCode?: number | null; lastAvailability?: number | null };
 
+const statusText = (code: number) => {
+  if (code >= 200 && code < 300) return `${code} OK`;
+  if (code >= 300 && code < 400) return `${code} Redirect`;
+  if (code >= 400 && code < 500) return `${code} Client Error`;
+  if (code >= 500) return `${code} Server Error`;
+  return `${code}`;
+};
+
 export default function ViewServicePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [service, setService] = useState<Service | null>(null);
@@ -46,11 +54,11 @@ export default function ViewServicePage({ params }: { params: Promise<{ id: stri
               <div className="flex flex-col lg:flex-row gap-4 w-full">
                 <div className="flex flex-col gap-2 w-full">
                   <label className="text-[#F8FAFC]">Service Name</label>
-                  <p className="bg-[#1E293B] text-[#F8FAFC] w-full p-2 rounded break-all">{service.name}</p>
+                  <p className="bg-[#1E293B] text-[#F8FAFC] w-full p-2 rounded truncate" title={service.name}>{service.name}</p>
                 </div>
                 <div className="flex flex-col gap-2 w-full">
                   <label className="text-[#F8FAFC]">Url</label>
-                  <p className="bg-[#1E293B] text-[#F8FAFC] w-full p-2 rounded break-all">{service.url}</p>
+                  <p className="bg-[#1E293B] text-[#F8FAFC] w-full p-2 rounded truncate" title={service.url}>{service.url}</p>
                 </div>
                 <div className="flex flex-col gap-2 w-full">
                   <label className="text-[#F8FAFC]">State</label>
@@ -76,7 +84,7 @@ export default function ViewServicePage({ params }: { params: Promise<{ id: stri
                 </div>
                 <div className="bg-[#334155] p-4 rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.25)]">
                   <p className="text-sm opacity-80">Status code</p>
-                  <p className="text-xl font-bold">{latest ? `${latest.statusCode} OK` : "—"}</p>
+                  <p className="text-xl font-bold">{latest ? statusText(latest.statusCode) : "—"}</p>
                 </div>
                 <div className="bg-[#334155] p-4 rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.25)]">
                   <p className="text-sm opacity-80">Availability</p>
