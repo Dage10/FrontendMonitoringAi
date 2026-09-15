@@ -31,11 +31,10 @@ export default function Dashboard() {
     const loadHistoricalMetrics = async () => {
       if (services.length === 0) return;
       try {
-        const allMetrics: RawMetric[] = [];
-        for (const service of services) {
-          const serviceMetrics = await api<RawMetric[]>(`/metrics/service/${service.id}?minutes=${rangeMinutes}`);
-          allMetrics.push(...serviceMetrics);
-        }
+        const results = await Promise.all(
+          services.map((s) => api<RawMetric[]>(`/metrics/service/${s.id}?minutes=${rangeMinutes}`))
+        );
+        const allMetrics = results.flat();
         if (allMetrics.length > 0) {
           const filtered = filterMetricsByMinutes([...allMetrics], rangeMinutes);
           setMetrics(toChartData([...filtered].reverse().slice(-50)));
