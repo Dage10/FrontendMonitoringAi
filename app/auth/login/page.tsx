@@ -17,6 +17,10 @@ export default function Login() {
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
+    if (!username.trim() || !password.trim()) {
+      setError("Username and password are required");
+      return;
+    }
     setSubmitting(true);
     try {
       const user = await loginApi(username, password);
@@ -73,11 +77,11 @@ export default function Login() {
                 <form className="flex flex-col gap-4 text-[#CBD5E1]" onSubmit={submit}>
                     <div className="flex flex-col gap-2 w-full">
                       <label>Username</label>
-                      <input type="text" value={username} onChange={e => setU(e.target.value)} className="bg-[#1E293B] text-[#F8FAFC] max-w-md p-2 border border-[#334155] rounded focus:border-[#6366F1] outline-none" />
+                      <input type="text" name="username" value={username} onChange={e => setU(e.target.value)} className="bg-[#1E293B] text-[#F8FAFC] max-w-md p-2 border border-[#334155] rounded focus:border-[#6366F1] outline-none" />
                     </div>
                     <div className="flex flex-col gap-2 w-full">
                       <label>Password</label>
-                      <input type="password" value={password} onChange={e => setP(e.target.value)} className="bg-[#1E293B] text-[#F8FAFC] max-w-md p-2 border border-[#334155] rounded focus:border-[#6366F1] outline-none" />
+                      <input type="password" name="password" value={password} onChange={e => setP(e.target.value)} className="bg-[#1E293B] text-[#F8FAFC] max-w-md p-2 border border-[#334155] rounded focus:border-[#6366F1] outline-none" />
                     </div>
                     {error && <p className="max-w-md text-[#F87171]" role="alert">{error}</p>}
                     <button type="submit" disabled={submitting} className="bg-[#6366F1] text-[#F8FAFC] max-w-md p-2 rounded hover:bg-[#6366F1]/80 disabled:opacity-60">

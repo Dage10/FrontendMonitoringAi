@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { connectSSE } from "@/lib/sse";
 import { api } from "@/lib/api";
-import { toChartData, avgLatency, availabilityPercent, filterMetricsByMinutes } from "@/lib/metrics";
+import { toChartData, avgLatency, availabilityPercent, filterMetricsByMinutes, sortMetricsByCreatedAt, downsampleMetrics, type RawMetric } from "@/lib/metrics";
 import LatencyChart from "@/components/LatencyChart";
 import Header from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
@@ -13,7 +13,6 @@ import RangeSelector from "@/components/RangeSelector";
 import Link from "next/link";
 
 type Service = { id: number; lastStatusCode?: number | null };
-type RawMetric = { latencyMs: number; statusCode: number; availability: number; createdAt: string };
 
 export default function Dashboard() {
   const [metrics, setMetrics] = useState<ReturnType<typeof toChartData>>([]);
@@ -36,8 +35,9 @@ export default function Dashboard() {
         );
         const allMetrics = results.flat();
         if (allMetrics.length > 0) {
-          const filtered = filterMetricsByMinutes([...allMetrics], rangeMinutes);
-          setMetrics(toChartData([...filtered].reverse().slice(-50)));
+          const filtered = filterMetricsByMinutes(allMetrics, rangeMinutes);
+          const ordered = sortMetricsByCreatedAt(filtered);
+          setMetrics(toChartData(downsampleMetrics(ordered)));
           setLastUpdate(new Date().toLocaleTimeString());
         } else {
           setMetrics([]);
@@ -58,7 +58,7 @@ export default function Dashboard() {
           latency: point.latencyMs ?? 0,
           errors: (point.statusCode ?? 200) >= 400 ? 1 : 0,
           availability: availabilityPercent(point.availability ?? 0),
-          timestamp: new Date(point.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          timestamp: new Date(point.createdAt).getTime(),
         };
         setMetrics((prev) => [...prev.slice(-49), mapped]);
         setLastUpdate(new Date().toLocaleTimeString());

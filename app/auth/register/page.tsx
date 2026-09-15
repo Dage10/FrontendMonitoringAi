@@ -18,6 +18,10 @@ export default function Register() {
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
+    if (!username.trim() || !email.trim() || !password.trim()) {
+      setError("All fields are required");
+      return;
+    }
     setSubmitting(true);
     try {
       const user = await registerApi(username, email, password);
@@ -74,15 +78,15 @@ export default function Register() {
                 <form className="flex flex-col gap-4 text-[#CBD5E1]" onSubmit={submit}>
                     <div className="flex flex-col gap-2">
                       <label>Username</label>
-                      <input type="text" value={username} onChange={e => setU(e.target.value)} className="bg-[#1E293B] text-[#F8FAFC] max-w-md p-2 border border-[#334155] rounded focus:border-[#6366F1] outline-none" />
+                      <input type="text" name="username" value={username} onChange={e => setU(e.target.value)} className="bg-[#1E293B] text-[#F8FAFC] max-w-md p-2 border border-[#334155] rounded focus:border-[#6366F1] outline-none" />
                     </div>
                     <div className="flex flex-col gap-2">
                       <label>Email</label>
-                      <input type="email" value={email} onChange={e => setE(e.target.value)} className="bg-[#1E293B] text-[#F8FAFC] max-w-md p-2 border border-[#334155] rounded focus:border-[#6366F1] outline-none" />
+                      <input type="email" name="email" value={email} onChange={e => setE(e.target.value)} className="bg-[#1E293B] text-[#F8FAFC] max-w-md p-2 border border-[#334155] rounded focus:border-[#6366F1] outline-none" />
                     </div>
                     <div className="flex flex-col gap-2">
                       <label>Password</label>
-                      <input type="password" value={password} onChange={e => setP(e.target.value)} className="bg-[#1E293B] text-[#F8FAFC] max-w-md p-2 border border-[#334155] rounded focus:border-[#6366F1] outline-none" />
+                      <input type="password" name="password" value={password} onChange={e => setP(e.target.value)} className="bg-[#1E293B] text-[#F8FAFC] max-w-md p-2 border border-[#334155] rounded focus:border-[#6366F1] outline-none" />
                     </div>
                     {error && <p className="max-w-md text-[#F87171]" role="alert">{error}</p>}
                     <button type="submit" disabled={submitting} className="bg-[#6366F1] text-[#F8FAFC] max-w-md p-2 rounded hover:bg-[#6366F1]/80 disabled:opacity-60">

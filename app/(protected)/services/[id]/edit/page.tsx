@@ -18,7 +18,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
     api(`/services/${id}`).then((s: { name: string; url: string }) => {
       setName(s.name);
       setUrl(s.url);
-    });
+    }).catch(() => setError("Unable to load service"));
   }, [id]);
 
   const submit = async () => {
@@ -45,7 +45,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
         </Link>
         <div className="flex">
           <div className="flex flex-col w-full px-10 lg:px-8 pt-24 pb-10 gap-8 max-w-7xl mx-auto">
-            <div className="flex flex-col lg:flex-row items-center justify-center h-auto gap-4 p-6 mx-auto max-w-sm xl:max-w-6xl lg:max-w-6xl bg-[#334155] shadow-[0_4px_24px_rgba(0,0,0,0.25)] rounded-xl w-full">
+            <div className="flex flex-col lg:flex-row items-center justify-center h-auto gap-4 p-6 mx-auto max-w-md xl:max-w-6xl lg:max-w-6xl bg-[#334155] shadow-[0_4px_24px_rgba(0,0,0,0.25)] rounded-xl w-full">
               <div className="flex flex-col gap-2 w-full">
                 <label className="text-[#F8FAFC]">Service Name</label>
                 <input

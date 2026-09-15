@@ -2,7 +2,7 @@
 
 import { use, useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import { availabilityPercent, toChartData, isAnomaly, filterMetricsByMinutes } from "@/lib/metrics";
+import { availabilityPercent, toChartData, isAnomaly, filterMetricsByMinutes, sortMetricsByCreatedAt, downsampleMetrics, type RawMetric } from "@/lib/metrics";
 import Header from "@/components/Header";
 import LatencyChart from "@/components/LatencyChart";
 import ErrorsChart from "@/components/ErrorsChart";
@@ -10,7 +10,6 @@ import AvailabilityChart from "@/components/AvailabilityChart";
 import RangeSelector from "@/components/RangeSelector";
 import Link from "next/link";
 
-type RawMetric = { latencyMs: number; statusCode: number; availability: number; createdAt: string };
 type Service = { name: string; url: string; lastLatencyMs?: number | null; lastStatusCode?: number | null; lastAvailability?: number | null };
 
 const statusText = (code: number) => {
@@ -24,19 +23,22 @@ const statusText = (code: number) => {
 export default function ViewServicePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [service, setService] = useState<Service | null>(null);
+  const [loading, setLoading] = useState(true);
   const [rawMetrics, setRawMetrics] = useState<RawMetric[]>([]);
   const [rangeMinutes, setRangeMinutes] = useState<number>(60);
 
   useEffect(() => {
-    api(`/services/${id}`).then(setService).catch(() => setService(null));
+    api(`/services/${id}`).then(setService).catch(() => setService(null)).finally(() => setLoading(false));
     api(`/metrics/service/${id}?minutes=${rangeMinutes}`).then(setRawMetrics).catch(() => setRawMetrics([]));
   }, [id, rangeMinutes]);
 
-  const metrics = toChartData([...filterMetricsByMinutes(rawMetrics, rangeMinutes)].reverse());
-  const latest = rawMetrics[0] ?? null;
-  const anomaly = isAnomaly(filterMetricsByMinutes(rawMetrics, rangeMinutes));
+  const filteredMetrics = sortMetricsByCreatedAt(filterMetricsByMinutes(rawMetrics, rangeMinutes));
+  const metrics = toChartData(downsampleMetrics(filteredMetrics));
+  const latest = filteredMetrics[filteredMetrics.length - 1] ?? null;
+  const anomaly = isAnomaly([...filteredMetrics].reverse());
 
-  if (!service) return <><Header /><p className="text-[#F8FAFC] p-8">Loading...</p></>;
+  if (loading) return <><Header /><p className="text-[#F8FAFC] p-8">Loading...</p></>;
+  if (!service) return <><Header /><p className="text-[#F8FAFC] p-8">Service not found.</p></>;
 
   return (
     <>

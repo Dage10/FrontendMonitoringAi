@@ -2,14 +2,30 @@ import { API_URL } from "./api";
 
 export const connectSSE = (onEvent: (event: string, data: unknown) => void) => {
   const controller = new AbortController();
+  let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
+  let reconnectDelay = 1000;
 
-  (async () => {
+  const scheduleReconnect = () => {
+    if (controller.signal.aborted || reconnectTimer) return;
+    reconnectTimer = setTimeout(() => {
+      reconnectTimer = undefined;
+      void connect();
+    }, reconnectDelay);
+    reconnectDelay = Math.min(reconnectDelay * 2, 30_000);
+  };
+
+  const connect = async () => {
     try {
       const res = await fetch(`${API_URL}/metrics/stream`, {
         credentials: "include",
         signal: controller.signal,
       });
-      if (!res.ok || !res.body) return;
+      if (!res.ok || !res.body) {
+        scheduleReconnect();
+        return;
+      }
+
+      reconnectDelay = 1000;
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
@@ -39,10 +55,16 @@ export const connectSSE = (onEvent: (event: string, data: unknown) => void) => {
           }
         }
       }
+      if (!controller.signal.aborted) scheduleReconnect();
     } catch {
-      /* connection closed */
+      if (!controller.signal.aborted) scheduleReconnect();
     }
-  })();
+  };
 
-  return () => controller.abort();
+  void connect();
+
+  return () => {
+    controller.abort();
+    if (reconnectTimer) clearTimeout(reconnectTimer);
+  };
 };

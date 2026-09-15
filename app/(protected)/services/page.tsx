@@ -7,14 +7,7 @@ import Link from "next/link";
 import Service from "@/components/Service";
 import Header from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
-
-type ServiceItem = {
-  id: number;
-  name: string;
-  url: string;
-  lastLatencyMs?: number | null;
-  lastStatusCode?: number | null;
-};
+import type { ServiceItem } from "@/lib/metrics";
 
 const PAGE_SIZE = 3;
 
